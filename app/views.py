@@ -1,8 +1,7 @@
-import datetime
-from flask import jsonify, request
-from sqlalchemy import cast, DATE, extract, and_
+from flask import request
 from app import app, db
 from app.models import Book, Curricula, Keyword, Author, Article
+from flask.ext.jsonpify import jsonify
 
 
 @app.route('/')

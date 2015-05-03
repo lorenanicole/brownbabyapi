@@ -2,7 +2,7 @@ import datetime
 from flask import jsonify, request
 from sqlalchemy import cast, DATE, extract, and_
 from app import app, db
-from app.models import Book, Curricula, Keyword, Author
+from app.models import Book, Curricula, Keyword, Author, Article
 
 
 @app.route('/')
@@ -30,6 +30,43 @@ def delete_book(book_id):
             return jsonify({'data': 'Error'})
     else:
         return jsonify({'data': None })
+
+@app.route('/books/create', methods=['POST'])
+def create_book():
+
+    book = Book.query.filter_by(title=request.form.get('title'))
+    if book:
+        return jsonify({'data': 'Error, already exists'})
+
+    book = Book(request.form)
+    keywords = request.form.get('keywords')
+    if keywords:
+        for keyword in keywords.split(','):
+            k = Keyword.query.filter_by(keyword=keyword)
+            if not k:
+                k = Keyword(keyword.strip())
+            book.keywords.append(k)
+    authors = request.form.get('authors')
+    if authors:
+        for author in authors.split(','):
+            a = Author.query.filter_by(name=author)
+            if not a:
+                a = Author(author.strip())
+            book.authors.append(a)
+    curriculum = request.form.get('curriculum')
+    if curriculum:
+        for curricula in curriculum.split(','):
+            c = Curricula.query.filter_by(link=curricula)
+            if not c:
+                c = Curricula(curricula.strip())
+            book.curriculum.append(c)
+    try:
+        db.session.add(book)
+        db.session.commit()
+        return jsonify({'data': 'Success'})
+    except Exception as e:
+            return jsonify({'data': 'Error'})
+
 
 @app.route('/books/<int:book_id>', methods=['POST'])
 def edit_book(book_id):
@@ -177,4 +214,36 @@ def book_curriculm(book_id):
     else:
         return jsonify({'data': None })
 
+@app.route('/articles')
+def articles():
+    articles = Article.query.all()
+    articles = [article.to_dict() for article in articles]
 
+    if articles:
+        return jsonify({'data': articles})
+    else:
+        return jsonify({'data': None })
+
+@app.route('/articles/<int:article_id>')
+def article(article_id):
+    article = Article.query.filter_by(id=article_id).first()
+
+    if article:
+        return jsonify({'data': article.to_dict()})
+    else:
+        return jsonify({'data': None })
+
+@app.route('/articles/create', methods=['POST'])
+def create_article():
+    article = Article.query.filter_by(title=request.form.get('title'))
+    if article:
+        return jsonify({'data': 'Error, already exists'})
+
+    article = Article(request.form)
+
+    try:
+        db.session.add(article)
+        db.session.commit()
+        return jsonify({'data': 'Success'})
+    except Exception as e:
+            return jsonify({'data': 'Error'})

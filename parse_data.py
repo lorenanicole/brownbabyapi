@@ -19,7 +19,7 @@ def create_publish_date(month_string, year_string):
         return date_object
 
 def get_boolean_val(val):
-    return True if val == '-1' else False
+    return True if val == '-1' or val == 'Yes' else False
 
 def warp_csv_dict(data):
     new_book_dict = {}
@@ -62,42 +62,42 @@ all_keywords = []
 all_curriculum = []
 all_publishers = []
 
-with open('/Users/lorenamesa/Desktop/brown-baby-reads/books.csv', 'rb') as csvfile:
-    counter = 0
-    bookreader = csv.DictReader(csvfile)
-    for row in bookreader:
-        book_data = warp_csv_dict(row)
-        book = Book(book_data)
-        # print book.to_dict()['title']
-        # authors = create_authors(row['Authors_1'])
-        authors = row['Authors_1'].split(',')
-        for author in authors:
-            a = Author.query.filter_by(name=author.strip()).first()
-            # all_authors.append(author)
-            if a:
-                book.authors.append(a)
-
-        keywords = row['Keywords'].split(',')
-        for keyword in keywords:
-            k = Keyword.query.filter_by(keyword=keyword.strip()).first()
-            # all_authors.append(author)
-            if k:
-                book.keywords.append(k)
-
-        curriculum = [row.get('Curriculum_Links1'), row.get('Curriculum_Links2'), row.get('Curriculum_Links3'), row.get('Curriculum_Links4')]
-        # curriculum = create_curriculum(curriculum)
-        for curricula in curriculum:
-            # all_curriculum.append(curricula)
-            c = Curricula.query.filter_by(link=curricula.strip()).first()
-            if c:
-                book.curriculum.append(c)
-
-        counter += 1
-        # print book.to_dict()
-
-        db.session.add(book)
-        db.session.commit()
-        print "counter %s" % counter
+# with open('/Users/lorenamesa/Desktop/brown-baby-reads/books.csv', 'rb') as csvfile:
+#     counter = 0
+#     bookreader = csv.DictReader(csvfile)
+#     for row in bookreader:
+#         book_data = warp_csv_dict(row)
+#         book = Book(book_data)
+#         # print book.to_dict()['title']
+#         # authors = create_authors(row['Authors_1'])
+#         authors = row['Authors_1'].split(',')
+#         for author in authors:
+#             a = Author.query.filter_by(name=author.strip()).first()
+#             # all_authors.append(author)
+#             if a:
+#                 book.authors.append(a)
+#
+#         keywords = row['Keywords'].split(',')
+#         for keyword in keywords:
+#             k = Keyword.query.filter_by(keyword=keyword.strip()).first()
+#             # all_authors.append(author)
+#             if k:
+#                 book.keywords.append(k)
+#
+#         curriculum = [row.get('Curriculum_Links1'), row.get('Curriculum_Links2'), row.get('Curriculum_Links3'), row.get('Curriculum_Links4')]
+#         # curriculum = create_curriculum(curriculum)
+#         for curricula in curriculum:
+#             # all_curriculum.append(curricula)
+#             c = Curricula.query.filter_by(link=curricula.strip()).first()
+#             if c:
+#                 book.curriculum.append(c)
+#
+#         counter += 1
+#         # print book.to_dict()
+#
+#         db.session.add(book)
+#         db.session.commit()
+#         print "counter %s" % counter
 
     # all_things = all_authors + all_keywords + all_curriculum + all_publishers
     # for author in all_authors:
@@ -118,14 +118,43 @@ with open('/Users/lorenamesa/Desktop/brown-baby-reads/books.csv', 'rb') as csvfi
 
 
     # db.session.commit()
-# ['Distribution_Age_Gender_Sampler', 'Classroom_Support', 'CSP_BookType', 'BookLists',
-#  'Audio_Book', 'NewCurriculum', 'Title', 'BBR_Page_Link', 'Book_Tournament_K_1st',
-#  'Audiobook_Link', 'Lexile', 'Feature_Date', 'CSP_Curriculum', 'Reading_Room_Quantity',
-#  'Reading_Room', 'Authors_1', 'Distribtuion_Book_Bundle_Series', 'DRA', 'google_book_preview',
-#  'Distribution_BoxBook', 'Age_Group', 'Book_Tournament_4th_5th', 'Picture', 'CurriculumEnterDate',
-#  'Date_Entered', 'Description', 'BookID', 'Hardcover', 'Type', 'Author_Link', 'Kids_Description',
-#  'Distribution_Merchandising', 'BoardBook_Retail', 'CurriculumLink1_Acknowledgement', 'BoardBook',
-#  'Curriculum_Links5', 'Interest_Level', 'Book_Reviewer_Highlight', 'Pages', 'Curriculum_Links4',
-#  'Publisher', 'Illustrator', 'Curriculum_Links1', 'Curriculum_Links2', 'Curriculum_Links3', 'Biography_Person',
-#  'Gender', 'Ebay_Link', 'Guided_Reading_Level', 'Out_of_Print', 'Curriculum_on_File', 'Distribution_Subscription',
-#  'Title_alphabetical', 'Recommended_Age', 'Paperback_Retail', 'classroom_support_choice', 'BBR_estore_link', 'Distribution_Book_Box', 'Paperback', 'BookClubCategory', 'Reading_Grade_Level', 'Hardcover_Retail', 'Book_Tournament_2nd_3rd', 'Series', 'Parent_Publisher', 'Author_on_File', 'Month', 'ISBN_13', 'GenreSubject_1', 'Publish_Year', 'Amazon_Link', 'Classroom_Support_Book', 'Keywords', 'Publish_Month', 'Distribution_Book_Bundle_Group']
+
+def warp_article_dict(data):
+    new_article_dict = {}
+    article_fields = ('article', 'title', 'authors', 'publisher_journal',
+                      'volume_page', 'year', 'month', 'summary_link',
+                      'keywords', 'picture')
+    boolean_fields = ('book','academic_journal')
+
+    for key, val in data.iteritems():
+        if key.lower() in article_fields:
+            new_article_dict[key.lower()] = val.strip()
+        elif key.lower() in boolean_fields:
+            new_article_dict[key.lower()] = get_boolean_val(val)
+
+    if new_article_dict.get('entire_article_link'):
+        new_article_dict['article_link'] = new_article_dict.get('entire_article_link')
+
+    if new_article_dict.get('subject_topic'):
+        new_article_dict['subject'] = new_article_dict.get('subject_topic')
+
+    if new_article_dict.get('description_synopsis'):
+        new_article_dict['description'] = new_article_dict.get('description_synopsis')
+
+    publish_date = create_publish_date(data.get('Month'), data.get('Publish_Year'))
+    new_article_dict['publish_date'] = publish_date
+    return new_article_dict
+
+with open('/Users/lorenamesa/Desktop/brown-baby-reads/research_articles.csv', 'rb') as csvfile:
+    counter = 0
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        data = warp_article_dict(row)
+        article = Article(data)
+
+        counter += 1
+        # print book.to_dict()
+
+        db.session.add(article)
+        db.session.commit()
+        print "counter %s" % counter

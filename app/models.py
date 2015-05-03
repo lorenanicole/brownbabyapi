@@ -1,3 +1,4 @@
+import datetime
 from sqlalchemy import PrimaryKeyConstraint
 import time
 from app import db
@@ -36,9 +37,6 @@ class Keyword(db.Model):
     def to_dict(self):
         result = dict()
         for key in self.__mapper__.c.keys():
-            if key == 'publish_date' or key == 'date_entered':
-                print str(getattr(self, key))
-                result[key] = str(getattr(self, key))
             result[key] = getattr(self, key)
 
         return result
@@ -58,12 +56,10 @@ class Author(db.Model):
     def __init__(self, name):
         self.name = name
 
+
     def to_dict(self):
         result = dict()
         for key in self.__mapper__.c.keys():
-            if key == 'publish_date' or key == 'date_entered':
-                print str(getattr(self, key))
-                result[key] = str(getattr(self, key))
             result[key] = getattr(self, key)
 
         return result
@@ -102,12 +98,12 @@ class Book(db.Model):
         self.booklists = data.get('booklists')
         self.title= data.get('title')
         self.lexile= data.get('lexile')
-        self.reading_room = data.get('reading_room', False)
+        self.reading_room = False if data.get('reading_room', False) == '0' else True
         self.dra= data.get('dra')
         self.google_book_preview= data.get('google_book_preview')
         self.age_group= data.get('age_group')
         self.picture= data.get('picture')
-        self.date_entered= data.get('date_entered')
+        self.date_entered= self._get_date(data.get('date_entered'))
         self.description= data.get('description')
         self.type= data.get('type')
         self.interest_level = data.get('interest_level')
@@ -115,13 +111,18 @@ class Book(db.Model):
         self.illustrator= data.get('illustrator')
         self.biography_person= data.get('biography_person')
         self.guided_reading_level= data.get('guided_reading_level')
-        self.out_of_print= data.get('out_of_print', False)
+        self.out_of_print= False if data.get('out_of_print', False)== '0' else True
         self.bbr_estore_link= data.get('bbr_estore_link')
         self.reading_grade_level= data.get('reading_grade_level')
         self.series= data.get('series')
-        self.publish_date = data.get('publish_date') #combo of month, publish_year
+        self.publish_date = self._get_date(data.get('publish_date')) #combo of month, publish_year
         self.parent_publisher = data.get('parent_publisher')
         self.publisher = data.get('publisher')
+
+    def _get_date(self, datestring):
+        if not datestring:
+            return
+        return datetime.datetime.strptime(datestring,"%m/%d/%Y").date()
 
     def to_dict(self):
         return {'id': self.id,
@@ -161,9 +162,44 @@ class Curricula(db.Model):
     def to_dict(self):
         result = dict()
         for key in self.__mapper__.c.keys():
-            if key == 'publish_date' or key == 'date_entered':
-                print str(getattr(self, key))
-                result[key] = str(getattr(self, key))
+            result[key] = getattr(self, key)
+
+        return result
+
+class Article(db.Model):
+    __tablename__ = 'articles'
+    id = db.Column(db.Integer, primary_key=True)
+    book = db.Column(db.Boolean)
+    academic_journal = db.Column(db.Boolean)
+    title = db.Column(db.String(255))
+    authors = db.Column(db.String(255))
+    publisher_journal = db.Column(db.String(255))
+    volume_page = db.Column(db.String(255))
+    year = db.Column(db.Integer)
+    article_link = db.Column(db.String(255))
+    summary_link = db.Column(db.String(255))
+    description = db.Column(db.Text)
+    subject = db.Column(db.String(255))
+    picture = db.Column(db.String(255))
+
+    def __init__(self, data):
+        self.book = False if data.get('book', False) == '0' else True
+        self.academic_journal = False if data.get('academic_journal', False) else True
+        self.title = data.get('title')
+        self.authors = data.get('authors')
+        self.publisher_journal = data.get('publisher_journal')
+        self.volume_page =  data.get('volume_page')
+        self.year =  data.get('year')
+        self.article_link =  data.get('article_link') #entire_article_link
+        self.summary_link = data.get('summary_link')
+        self.description = data.get('description')  #description_synopsis
+        self.subject = data.get('subject') #subject_topic
+        self.picture = data.get('picture')
+
+
+    def to_dict(self):
+        result = dict()
+        for key in self.__mapper__.c.keys():
             result[key] = getattr(self, key)
 
         return result

@@ -2,6 +2,8 @@ from flask import request
 from app import app, db
 from app.models import Book, Curricula, Keyword, Author, Article
 from flask.ext.jsonpify import jsonify
+import requests
+import json
 
 
 @app.route('/')
@@ -246,3 +248,22 @@ def create_article():
         return jsonify({'data': 'Success'})
     except Exception as e:
             return jsonify({'data': 'Error'})
+            
+@app.route('/constant_contact/create', methods=['POST'])
+def create_constant_contact():
+    email_address_to_add = request.form.get("email")
+    url = "https://api.constantcontact.com/v2/contacts?email=%s&api_key=vw6uf3x79ww5txvgffrfss8f&access_token=28bca3b8-4991-45d5-8ea6-ff28960f873c" % email_address_to_add
+    constant_contact_response = requests.get(url)
+    response_dict = json.loads(constant_contact_response.content)
+
+    if response_dict.get('results'):
+        response = constant_contact_response
+        print "The user already exists"
+    else:
+        print "Creating a new user"
+        print request.form
+        parameters_dict = request.form
+        create_contact_url = "https://api.constantcontact.com/vetr2/contacts?api_key=vw6uf3x79ww5txvgffrfss8f&access_token=28bca3b8-4991-45d5-8ea6-ff28960f873c"
+        response = requests.post(create_contact_url, data=parameters_dict)
+
+    return jsonify(response)

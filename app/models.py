@@ -1,4 +1,5 @@
 from sqlalchemy import PrimaryKeyConstraint
+import time
 from app import db
 
 class User(db.Model):
@@ -32,8 +33,15 @@ class Keyword(db.Model):
     def __init__(self, keyword):
         self.keyword = keyword
 
-    # @staticmethod
-    # def get_or_create(self):
+    def to_dict(self):
+        result = dict()
+        for key in self.__mapper__.c.keys():
+            if key == 'publish_date' or key == 'date_entered':
+                print str(getattr(self, key))
+                result[key] = str(getattr(self, key))
+            result[key] = getattr(self, key)
+
+        return result
 
 
 
@@ -49,6 +57,16 @@ class Author(db.Model):
 
     def __init__(self, name):
         self.name = name
+
+    def to_dict(self):
+        result = dict()
+        for key in self.__mapper__.c.keys():
+            if key == 'publish_date' or key == 'date_entered':
+                print str(getattr(self, key))
+                result[key] = str(getattr(self, key))
+            result[key] = getattr(self, key)
+
+        return result
 
 class Book(db.Model):
     __tablename__ = 'books'
@@ -106,10 +124,30 @@ class Book(db.Model):
         self.publisher = data.get('publisher')
 
     def to_dict(self):
-        result = dict()
-        for key in self.__mapper__.c.keys():
-            result[key] = getattr(self, key)
-        return result
+        return {'id': self.id,
+                'booklists': self.booklists,
+                'title': self.title,
+                'lexile': self.lexile,
+                'reading_room' : self.reading_room,
+                'dra': self.dra,
+                'google_book_preview':self.google_book_preview,
+                'age_group': self.age_group,
+                'picture': self.picture,
+                'date_entered': str(self.date_entered),
+                'description': self.description,
+                'type': self.type,
+                'interest_level' : self.interest_level,
+                'pages': self.pages,
+                'illustrator': self.illustrator,
+                'biography_person': self.biography_person,
+                'guided_reading_level': self.guided_reading_level,
+                'out_of_print': self.out_of_print,
+                'bbr_estore_link': self.bbr_estore_link,
+                'reading_grade_level': self.reading_grade_level,
+                'series': self.series,
+                'publish_date' : str(self.publish_date), #combo of month, publish_year
+                'parent_publisher' : self.parent_publisher,
+                'publisher' : self.publisher }
 
 
 class Curricula(db.Model):
@@ -119,3 +157,13 @@ class Curricula(db.Model):
 
     def __init__(self, link):
         self.link = link
+
+    def to_dict(self):
+        result = dict()
+        for key in self.__mapper__.c.keys():
+            if key == 'publish_date' or key == 'date_entered':
+                print str(getattr(self, key))
+                result[key] = str(getattr(self, key))
+            result[key] = getattr(self, key)
+
+        return result

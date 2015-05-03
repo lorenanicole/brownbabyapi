@@ -4,20 +4,18 @@ from app.models import *
 from app import db
 
 
-def create_publish_date(year_string, month_string):
+def create_publish_date(month_string, year_string):
     try:
         year = int(year_string)
+        month = int(month_string)
     except:
         return
     if year_string and month_string:
-        month = int(month_string)
         if month > 12 or month < 1:
             month = 1
-        if year > 12 or year < 1:
-            month = 1
         day = 1
-        date_object = datetime.datetime(year, month, day)
-
+        date_object = datetime.date(year, month, day)
+        print str(date_object)
         return date_object
 
 def get_boolean_val(val):
@@ -37,7 +35,7 @@ def warp_csv_dict(data):
             new_book_dict[key.lower()] = get_boolean_val(val)
 
     if new_book_dict.get('date_entered'):
-        new_book_dict['date_entered'] = datetime.datetime.strptime(new_book_dict.get('date_entered'),"%m/%d/%Y")
+        new_book_dict['date_entered'] = datetime.datetime.strptime(new_book_dict.get('date_entered'),"%m/%d/%Y").date()
 
     publish_date = create_publish_date(data.get('Month'), data.get('Publish_Year'))
     new_book_dict['publish_date'] = publish_date

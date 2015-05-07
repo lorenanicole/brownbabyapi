@@ -148,6 +148,16 @@ def book_keyword(book_id):
     else:
         return jsonify({'data': None })
 
+@app.route('/books/<int:book_id>/authors')
+def book_authors(book_id):
+    book = Book.query.filter_by(id=book_id).first()
+    authors = [authors.to_dict() for authors in book.authors]
+
+    if authors:
+        return jsonify({'data': authors})
+    else:
+        return jsonify({'data': None })
+
 @app.route('/keywords/<int:keyword_id>/books')
 def keyword_book(keyword_id):
     keyword = Keyword.query.filter_by(id=keyword_id).first()
